@@ -1,0 +1,59 @@
+version: '3.6'
+
+networks:
+  web:
+    external: true
+  internal:
+    external: false
+
+services: 
+  proxy:
+    image: nginx
+    restart: always
+    container_name: 'proxy'
+    volumes:
+      - ./nginx:/etc/nginx:ro
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.server.rule=Host(`jordanmoore.org`)'
+      - 'traefik.http.routers.server.entrypoints=websecure'
+      - 'traefik.http.routers.server.tls.certresolver=appresolve'
+
+  db: 
+    image: postgres:latest
+    restart: always
+    env_file:
+      - ./.env
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - db_data:/var/lib/postgresql/data
+    ports: 
+      - 5432
+    networks:
+      - internal
+
+  graphile:
+    build: ./
+    restart: always
+    env_file:
+      - ./.env
+    depends_on: 
+      - db
+    networks:
+      - internal
+    ports:
+      - 5433:5433
+    command: ["--connection", "${DATABASE_URL}", "--port", "5433", "--schema", "public", "--append-plugins", "postgraphile-plugin-connection-filter", "--enhance-graphiql"]
+    
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    links:
+      - db
+    networks: 
+      - internal
+
+volumes:
+  db_data:

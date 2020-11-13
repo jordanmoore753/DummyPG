@@ -18,11 +18,15 @@ services:
       - 'traefik.http.routers.server.rule=Host(`jordanmoore.org`)'
       - 'traefik.http.routers.server.entrypoints=websecure'
       - 'traefik.http.routers.server.tls.certresolver=appresolve'
-
+    depends_on:
+      - app
+      - admin
+      - graphile
+       
   app:
     image: node
     restart: always
-    
+
   db: 
     image: postgres:latest
     restart: always

@@ -19,6 +19,10 @@ services:
       - 'traefik.http.routers.server.entrypoints=websecure'
       - 'traefik.http.routers.server.tls.certresolver=appresolve'
 
+  app:
+    image: node
+    restart: always
+    
   db: 
     image: postgres:latest
     restart: always

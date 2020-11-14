@@ -15,9 +15,9 @@ services:
     depends_on:
       - app
       - admin
-      - graphile
+      - auth
 
-  app:
+  auth:
     build: ./jwt_server
     restart: always
     container_name: 'jwt_server'
@@ -37,7 +37,7 @@ services:
     ports: 
       - 5432
 
-  graphile:
+  app:
     build: ./
     restart: always
     env_file:

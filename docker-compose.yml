@@ -1,11 +1,5 @@
 version: '3.6'
 
-networks:
-  web:
-    external: true
-  internal:
-    external: false
-
 services: 
   proxy:
     image: nginx
@@ -24,8 +18,13 @@ services:
       - graphile
 
   app:
-    image: node
+    build: ./jwt_server
     restart: always
+    container_name: 'jwt_server'
+    environment: 
+      - PORT=4000
+      - JWKS_URI=${JWKS_URI}
+      - HOST_NAME=${HOST_NAME}
 
   db: 
     image: postgres:latest
@@ -37,8 +36,6 @@ services:
       - db_data:/var/lib/postgresql/data
     ports: 
       - 5432
-    networks:
-      - internal
 
   graphile:
     build: ./
@@ -47,8 +44,6 @@ services:
       - ./.env
     depends_on: 
       - db
-    networks:
-      - internal
     ports:
       - 5433:5433
     command: ["--connection", "${DATABASE_URL}", "--port", "5433", "--schema", "public", "--append-plugins", "postgraphile-plugin-connection-filter", "--enhance-graphiql"]
@@ -60,8 +55,6 @@ services:
       - 8080:8080
     links:
       - db
-    networks: 
-      - internal
 
 volumes:
   db_data:
